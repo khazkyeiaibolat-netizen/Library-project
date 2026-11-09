@@ -1,0 +1,70 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import csrf, pagination, empty %}
+{% block title %}{{ t('staff.inventory') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head"><h1>{{ t('staff.inventory') }}</h1><p class="muted">{{ t('inv.sub') }}</p></div>
+
+<details class="card addstock">
+  <summary>＋ {{ t('inv.add_copies') }}</summary>
+  <form method="post" action="{{ url_for('staff.inventory_add') }}" class="filters inline">
+    {{ csrf() }}<input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+    <div class="field grow"><label for="add-book">{{ t('loan.book') }}</label>
+      <select id="add-book" name="book_id" required><option value="">{{ t('common.choose') }}</option>
+        {% for b in all_books %}<option value="{{ b.book_id }}">{{ b.title }}</option>{% endfor %}</select></div>
+    <div class="field"><label for="add-branch">{{ t('book.branch') }}</label>
+      <select id="add-branch" name="branch_id" required>{% for b in branches %}<option value="{{ b.branch_id }}">{{ b.name }}</option>{% endfor %}</select></div>
+    <div class="field narrow"><label for="add-qty">{{ t('inv.add_n') }}</label><input id="add-qty" name="quantity" type="number" min="1" value="1" required></div>
+    <div class="actions"><button class="btn" type="submit">{{ t('common.add') }}</button></div>
+  </form>
+</details>
+
+<form class="filters" method="get" role="search">
+  {% if g.user.role != 'branch_staff' %}
+  <div class="field"><label for="branch">{{ t('book.branch') }}</label>
+    <select id="branch" name="branch"><option value="">{{ t('common.all_branches') }}</option>
+      {% for b in branches %}<option value="{{ b.branch_id }}" {{ 'selected' if b.branch_id == branch }}>{{ b.name }}</option>{% endfor %}</select></div>
+  {% endif %}
+  <div class="field grow"><label for="q">{{ t('common.search') }}</label>
+    <input id="q" type="search" name="q" value="{{ q }}" placeholder="{{ t('catalog.search_placeholder') }}"></div>
+  <label class="check"><input type="checkbox" name="empty" value="1" {{ 'checked' if only_zero }}> {{ t('inv.only_empty') }}</label>
+  <div class="actions"><button class="btn" type="submit">{{ t('common.apply') }}</button></div>
+</form>
+
+{% if rows %}
+<div class="table-wrap"><table>
+  <thead><tr><th>{{ t('book.title') }}</th><th>{{ t('book.branch') }}</th><th class="num">{{ t('book.on_loan') }}</th><th class="num">{{ t('book.on_shelf') }}</th><th>{{ t('common.actions') }}</th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td data-label="{{ t('book.title') }}"><a href="{{ url_for('public.book_detail', book_id=r.book_id) }}"><b>{{ r.title }}</b></a></td>
+      <td data-label="{{ t('book.branch') }}">{{ r.branch_name }}</td>
+      <td data-label="{{ t('book.on_loan') }}" class="num">{{ r.on_loan }}</td>
+      <td data-label="{{ t('book.on_shelf') }}" class="num">
+        <form method="post" action="{{ url_for('staff.inventory_set') }}" class="qty-form">
+          {{ csrf() }}<input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+          <input type="hidden" name="book_id" value="{{ r.book_id }}"><input type="hidden" name="branch_id" value="{{ r.branch_id }}">
+          <input class="qty" name="quantity" type="number" min="0" value="{{ r.quantity }}" aria-label="{{ t('inv.quantity') }}">
+          <button class="btn btn-sm btn-ghost" type="submit">{{ t('common.save') }}</button>
+        </form>
+      </td>
+      <td data-label="{{ t('common.actions') }}">
+        {% if r.quantity > 0 %}
+        <details class="transfer"><summary class="btn btn-sm btn-ghost">⇄ {{ t('inv.transfer') }}</summary>
+          <form method="post" action="{{ url_for('staff.inventory_transfer') }}">
+            {{ csrf() }}<input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}">
+            <input type="hidden" name="book_id" value="{{ r.book_id }}"><input type="hidden" name="branch_id" value="{{ r.branch_id }}">
+            <label>{{ t('inv.to_branch') }}
+              <select name="to_branch" required>{% for b in all_branches if b.branch_id != r.branch_id %}<option value="{{ b.branch_id }}">{{ b.name }}</option>{% endfor %}</select></label>
+            <label>{{ t('inv.how_many') }} <input name="quantity" type="number" min="1" max="{{ r.quantity }}" value="1" required></label>
+            <button class="btn btn-sm" type="submit">{{ t('inv.transfer') }}</button>
+          </form>
+        </details>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{{ pagination(page) }}
+{% else %}{{ empty(t('inv.none')) }}{% endif %}
+{% endblock %}

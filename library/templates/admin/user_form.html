@@ -1,0 +1,26 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import csrf, field %}
+{% block title %}{{ t('admin.new_user') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head"><h1>{{ t('admin.new_user') }}</h1></div>
+<form class="card form-narrow" method="post" id="user-form">
+  {{ csrf() }}
+  {{ field(t('auth.username'), 'username', form.username, required=true, maxlength=30, autocomplete='off', hint=t('auth.username_hint')) }}
+  <div class="field"><label for="f-password">{{ t('auth.password') }} <span class="req">*</span></label>
+    <input id="f-password" name="password" type="password" required minlength="8" autocomplete="new-password"><small>{{ t('auth.password_hint') }}</small></div>
+  <div class="field"><label for="role">{{ t('admin.role') }}</label>
+    <select id="role" name="role" data-role-select>
+      {% for r in roles %}<option value="{{ r }}" {{ 'selected' if form.role == r }}>{{ t('role.' ~ r) }}</option>{% endfor %}
+    </select></div>
+  <div class="field" data-for-role="branch_staff"><label for="branch_id">{{ t('book.branch') }}</label>
+    <select id="branch_id" name="branch_id"><option value="">—</option>
+      {% for b in branches %}<option value="{{ b.branch_id }}" {{ 'selected' if form.branch_id == b.branch_id }}>{{ b.name }}</option>{% endfor %}
+    </select></div>
+  <div class="field" data-for-role="reader"><label for="reader_id">{{ t('loan.reader') }}</label>
+    <select id="reader_id" name="reader_id"><option value="">—</option>
+      {% for r in readers %}<option value="{{ r.reader_id }}" {{ 'selected' if form.reader_id == r.reader_id }}>{{ r.full_name }}</option>{% endfor %}
+    </select><small>{{ t('admin.reader_hint') }}</small></div>
+  <div class="actions"><button class="btn" type="submit">{{ t('common.save') }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('admin.users') }}">{{ t('common.cancel') }}</a></div>
+</form>
+{% endblock %}

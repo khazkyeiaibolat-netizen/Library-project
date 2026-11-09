@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import availability, pagination, empty %}
+{% block title %}{{ branch.name }}{% endblock %}
+{% block content %}
+<nav class="crumbs"><a href="{{ url_for('public.branches') }}">{{ t('nav.branches') }}</a> / <span>{{ branch.name }}</span></nav>
+<div class="page-head">
+  <h1>{{ branch.name }}</h1>
+  <p class="muted">{{ branch.address }}{% if branch.phone %} · ☎ {{ branch.phone }}{% endif %}</p>
+</div>
+<section class="stats stats-sm">
+  <div><b>{{ stats.titles }}</b><span>{{ t('stat.titles') }}</span></div>
+  <div><b>{{ stats.copies }}</b><span>{{ t('stat.copies') }}</span></div>
+</section>
+
+<form class="filters" method="get" role="search">
+  <div class="field grow"><label for="q">{{ t('catalog.search_label') }}</label>
+    <input id="q" type="search" name="q" value="{{ q }}" placeholder="{{ t('catalog.search_placeholder') }}"></div>
+  <div class="actions"><button class="btn" type="submit">{{ t('common.search') }}</button></div>
+</form>
+
+{% if books %}
+<div class="table-wrap">
+<table>
+  <thead><tr><th>{{ t('book.title') }}</th><th>{{ t('book.author') }}</th><th>{{ t('book.genre') }}</th><th class="num">{{ t('book.on_shelf') }}</th></tr></thead>
+  <tbody>
+  {% for b in books %}
+    <tr>
+      <td data-label="{{ t('book.title') }}"><a href="{{ url_for('public.book_detail', book_id=b.book_id) }}"><b>{{ b.title }}</b></a></td>
+      <td data-label="{{ t('book.author') }}" class="muted">{{ b.author }}</td>
+      <td data-label="{{ t('book.genre') }}">{{ genre_label(b.genre) }}</td>
+      <td data-label="{{ t('book.on_shelf') }}" class="num">{{ availability(b.quantity) }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+{{ pagination(page) }}
+{% else %}{{ empty(t('catalog.none')) }}{% endif %}
+{% endblock %}

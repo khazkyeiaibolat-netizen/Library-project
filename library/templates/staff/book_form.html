@@ -1,0 +1,26 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import csrf, field %}
+{% block title %}{{ t('common.edit') if book else t('book.add') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head"><h1>{{ t('common.edit') ~ ': ' ~ book.title if book else t('book.add') }}</h1></div>
+<form class="card form-narrow" method="post">
+  {{ csrf() }}
+  {{ field(t('book.title'), 'title', form.title, required=true, maxlength=200) }}
+  {{ field(t('book.author'), 'author', form.author, required=true, maxlength=150) }}
+  {{ field(t('book.genre'), 'genre', form.genre, maxlength=50, list='genre-list') }}
+  <datalist id="genre-list">{% for g_ in genres %}<option value="{{ g_.genre }}">{{ genre_label(g_.genre) }}</option>{% endfor %}</datalist>
+  {{ field(t('book.year'), 'publish_year', form.publish_year, type='number', maxlength=4) }}
+  {% if stock is not none %}
+  <fieldset>
+    <legend>{{ t('book.initial_stock') }}</legend>
+    <div class="field"><label for="branch">{{ t('book.branch') }}</label>
+      <select id="branch" name="branch"><option value="">—</option>
+        {% for b in branches %}<option value="{{ b.branch_id }}" {{ 'selected' if stock.branch == b.branch_id }}>{{ b.name }}</option>{% endfor %}
+      </select></div>
+    {{ field(t('inv.quantity'), 'quantity', stock.quantity, type='number') }}
+  </fieldset>
+  {% endif %}
+  <div class="actions"><button class="btn" type="submit">{{ t('common.save') }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('staff.books') }}">{{ t('common.cancel') }}</a></div>
+</form>
+{% endblock %}

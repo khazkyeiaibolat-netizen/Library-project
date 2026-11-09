@@ -1,0 +1,56 @@
+{% extends 'staff/_base.html' %}
+{% block title %}{{ t('admin.analytics') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head row">
+  <div><h1>{{ t('admin.analytics') }}</h1><p class="muted">{{ t('admin.analytics_sub') }}</p></div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.export_loans') }}">⭳ {{ t('admin.export_csv') }}</a>
+</div>
+
+<section class="stats">
+  <div><b>{{ stats.books }}</b><span>{{ t('stat.titles') }}</span></div>
+  <div><b>{{ stats.copies }}</b><span>{{ t('stat.on_shelf') }}</span></div>
+  <div><b>{{ stats.readers }}</b><span>{{ t('stat.readers') }}</span></div>
+  <div><b>{{ stats.loans }}</b><span>{{ t('admin.all_loans') }}</span></div>
+  <div><b>{{ stats.active }}</b><span>{{ t('stat.on_loan') }}</span></div>
+  <div><b class="{{ 'bad' if stats.overdue }}">{{ stats.overdue }}</b><span>{{ t('loan.overdue') }}</span></div>
+</section>
+
+<div class="two-col">
+  <section class="card">
+    <h2>{{ t('admin.chart_branch') }}</h2>
+    {% set mx = (per_branch|map(attribute='total_books')|max) or 1 %}
+    <ul class="bars">
+      {% for r in per_branch %}
+      <li><span class="lbl">{{ r.branch_name }}</span><span class="track"><i data-w="{{ (r.total_books / mx * 100)|round|int }}"></i></span><b>{{ r.total_books }}</b></li>
+      {% endfor %}
+    </ul>
+  </section>
+  <section class="card">
+    <h2>{{ t('admin.chart_genre') }}</h2>
+    {% set mg = (genres|map(attribute='n')|max) or 1 %}
+    <ul class="bars">
+      {% for r in genres %}
+      <li><span class="lbl">{{ genre_label(r.genre) }}</span><span class="track"><i data-w="{{ (r.n / mg * 100)|round|int }}"></i></span><b>{{ r.n }}</b></li>
+      {% endfor %}
+    </ul>
+  </section>
+</div>
+
+<div class="two-col">
+  <section class="card">
+    <h2>{{ t('admin.chart_month') }}</h2>
+    {% set mm = (per_month|map(attribute=1)|max) or 1 %}
+    <div class="cols">
+      {% for ym, n in per_month %}
+      <div class="col"><b>{{ n }}</b><span class="stick"><i data-h="{{ (n / mm * 100)|round|int }}"></i></span><small>{{ ym[5:] }}.{{ ym[2:4] }}</small></div>
+      {% endfor %}
+    </div>
+  </section>
+  <section class="card">
+    <h2>{{ t('admin.top_books') }}</h2>
+    <ol class="rank">
+      {% for b in top_books %}<li><a href="{{ url_for('public.book_detail', book_id=b.book_id) }}">{{ b.title }}</a><span class="muted"> — {{ b.author }}</span><b>{{ b.n }}</b></li>{% endfor %}
+    </ol>
+  </section>
+</div>
+{% endblock %}

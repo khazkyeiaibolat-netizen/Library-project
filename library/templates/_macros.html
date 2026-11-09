@@ -1,0 +1,55 @@
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{# Generated book cover - colour comes from the genre, so no image files are needed. #}
+{% macro cover(book, small=false) %}
+<div class="cover {{ cover_class(book.genre) }}{% if small %} cover-sm{% endif %}" aria-hidden="true">
+  <span class="cover-genre">{{ genre_label(book.genre) }}</span>
+  <span class="cover-title">{{ book.title }}</span>
+  <span class="cover-author">{{ book.author.split(',')[0] }}</span>
+</div>
+{% endmacro %}
+
+{% macro availability(copies) %}
+{% if copies > 0 %}<span class="pill pill-ok">{{ t('common.available_n', n=copies) }}</span>
+{% else %}<span class="pill pill-off">{{ t('common.unavailable') }}</span>{% endif %}
+{% endmacro %}
+
+{% macro loan_state(loan) %}
+{% if loan.return_id %}
+  <span class="pill {{ 'pill-warn' if loan.return_status == 'Кешігіп қайтарылды' else 'pill-ok' }}">{{ status_label(loan.return_status) }}</span>
+{% elif loan.is_overdue %}
+  <span class="pill pill-bad">{{ t('loan.overdue_days', n=-days_until(loan.due_date)) }}</span>
+{% else %}
+  {% set d = days_until(loan.due_date) %}
+  <span class="pill pill-info">{{ t('loan.due_today') if d == 0 else t('loan.due_in', n=d) }}</span>
+{% endif %}
+{% endmacro %}
+
+{% macro pagination(page) %}
+{% if page.pages > 1 %}
+<nav class="pager" aria-label="{{ t('common.pages') }}">
+  {% if page.page > 1 %}<a href="{{ page_url(page.page - 1) }}" rel="prev">←<span class="sr"> {{ t('common.prev') }}</span></a>{% endif %}
+  {% if page.window()[0] > 1 %}<a href="{{ page_url(1) }}">1</a>{% if page.window()[0] > 2 %}<span class="gap">…</span>{% endif %}{% endif %}
+  {% for n in page.window() %}
+    {% if n == page.page %}<span class="cur" aria-current="page">{{ n }}</span>{% else %}<a href="{{ page_url(n) }}">{{ n }}</a>{% endif %}
+  {% endfor %}
+  {% if page.window()[-1] < page.pages %}{% if page.window()[-1] < page.pages - 1 %}<span class="gap">…</span>{% endif %}<a href="{{ page_url(page.pages) }}">{{ page.pages }}</a>{% endif %}
+  {% if page.page < page.pages %}<a href="{{ page_url(page.page + 1) }}" rel="next"><span class="sr">{{ t('common.next') }} </span>→</a>{% endif %}
+</nav>
+{% endif %}
+{% endmacro %}
+
+{% macro field(label, name, value='', type='text', required=false, hint='', autocomplete='', maxlength='', list='', placeholder='') %}
+<div class="field">
+  <label for="f-{{ name }}">{{ label }}{% if required %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
+  <input id="f-{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ value if value is not none else '' }}"
+         {% if required %}required{% endif %} {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+         {% if maxlength %}maxlength="{{ maxlength }}"{% endif %} {% if list %}list="{{ list }}"{% endif %}
+         {% if placeholder %}placeholder="{{ placeholder }}"{% endif %}>
+  {% if hint %}<small>{{ hint }}</small>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro empty(message) %}
+<div class="empty"><p>{{ message }}</p></div>
+{% endmacro %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import csrf, field %}
+{% block title %}{{ t('nav.register') }}{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <form class="card auth" method="post" action="{{ url_for('auth.register') }}">
+    {{ csrf() }}
+    <h1>{{ t('auth.register_title') }}</h1>
+    <p class="muted">{{ t('auth.register_sub') }}</p>
+    {{ field(t('reader.full_name'), 'full_name', form.full_name, required=true, autocomplete='name', maxlength=150) }}
+    {{ field(t('reader.phone'), 'phone', form.phone, type='tel', autocomplete='tel', maxlength=20, placeholder='+7 7XX XXX XX XX') }}
+    {{ field(t('auth.username'), 'username', form.username, required=true, autocomplete='username', maxlength=30, hint=t('auth.username_hint')) }}
+    <div class="field"><label for="f-password">{{ t('auth.password') }} <span class="req">*</span></label>
+      <input id="f-password" name="password" type="password" required minlength="8" autocomplete="new-password"><small>{{ t('auth.password_hint') }}</small></div>
+    <div class="field"><label for="f-password2">{{ t('auth.password2') }} <span class="req">*</span></label>
+      <input id="f-password2" name="password2" type="password" required minlength="8" autocomplete="new-password"></div>
+    <button class="btn btn-block" type="submit">{{ t('nav.register') }}</button>
+    <p class="muted small center">{{ t('auth.have_account') }} <a href="{{ url_for('auth.login') }}">{{ t('nav.login') }}</a></p>
+  </form>
+</div>
+{% endblock %}

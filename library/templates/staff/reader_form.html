@@ -1,0 +1,13 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import csrf, field %}
+{% block title %}{{ t('reader.add') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head"><h1>{{ t('reader.add') }}</h1></div>
+<form class="card form-narrow" method="post">
+  {{ csrf() }}
+  {{ field(t('reader.full_name'), 'full_name', form.full_name, required=true, maxlength=150) }}
+  {{ field(t('reader.phone'), 'phone', form.phone, type='tel', maxlength=20, placeholder='+7 7XX XXX XX XX') }}
+  <div class="actions"><button class="btn" type="submit">{{ t('common.save') }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('staff.readers') }}">{{ t('common.cancel') }}</a></div>
+</form>
+{% endblock %}

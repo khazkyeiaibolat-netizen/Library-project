@@ -1,0 +1,47 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import csrf, field, loan_state, empty %}
+{% block title %}{{ reader.full_name }}{% endblock %}
+{% block staff_content %}
+<nav class="crumbs"><a href="{{ url_for('staff.readers') }}">{{ t('staff.readers') }}</a> / <span>{{ reader.full_name }}</span></nav>
+<div class="page-head row">
+  <div><h1>{{ reader.full_name }}</h1>
+    <p class="muted">#{{ reader.reader_id }} · {{ reader.phone or '—' }}{% if account %} · {{ t('reader.account') }}: <code>{{ account.username }}</code>{% endif %}</p></div>
+  <a class="btn" href="{{ url_for('staff.loan_new', reader=reader.reader_id) }}">＋ {{ t('loan.issue') }}</a>
+</div>
+
+<div class="two-col">
+  <section>
+    <h2>{{ t('staff.loans') }}</h2>
+    {% if loans %}
+    <div class="table-wrap"><table>
+      <thead><tr><th>{{ t('book.title') }}</th><th>{{ t('loan.loan_date') }}</th><th>{{ t('loan.state') }}</th><th></th></tr></thead>
+      <tbody>
+      {% for l in loans %}
+        <tr>
+          <td data-label="{{ t('book.title') }}">{{ l.title }}<br><span class="muted small">{{ l.branch_name }}</span></td>
+          <td data-label="{{ t('loan.loan_date') }}">{{ fmt_date(l.loan_date) }}</td>
+          <td data-label="{{ t('loan.state') }}">{{ loan_state(l) }}</td>
+          <td class="num">{% if not l.return_id %}<form method="post" action="{{ url_for('staff.loan_return', loan_id=l.loan_id) }}">{{ csrf() }}<input type="hidden" name="next" value="{{ request.path }}"><button class="btn btn-sm" type="submit">{{ t('loan.return') }}</button></form>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}{{ empty(t('loan.none')) }}{% endif %}
+  </section>
+
+  <section>
+    <h2>{{ t('common.edit') }}</h2>
+    <form class="card" method="post">
+      {{ csrf() }}
+      {{ field(t('reader.full_name'), 'full_name', reader.full_name, required=true, maxlength=150) }}
+      {{ field(t('reader.phone'), 'phone', reader.phone, type='tel', maxlength=20) }}
+      <button class="btn" type="submit">{{ t('common.save') }}</button>
+    </form>
+    {% if g.user.role in ('librarian', 'admin') %}
+    <form method="post" action="{{ url_for('staff.reader_delete', reader_id=reader.reader_id) }}" data-confirm="{{ t('confirm.delete') }}" class="mt">
+      {{ csrf() }}<button class="btn btn-danger btn-ghost" type="submit">{{ t('reader.delete') }}</button>
+    </form>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

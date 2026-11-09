@@ -1,0 +1,22 @@
+{% extends 'staff/_base.html' %}
+{% block title %}{{ t('admin.reports') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head"><h1>{{ t('admin.reports') }}</h1><p class="muted">{{ t('report.intro') }}</p></div>
+{% for r in results %}
+<section class="card report">
+  <h2>{{ t(r.title) }}</h2>
+  <p class="muted">{{ t(r.desc) }}</p>
+  <details>
+    <summary>{{ t('report.show_sql') }}</summary>
+    <pre><code>{{ r.sql }}</code></pre>
+  </details>
+  <div class="table-wrap"><table>
+    <thead><tr>{% for c in r.cols %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+    <tbody>
+    {% for row in r.rows %}<tr>{% for c in r.cols %}<td data-label="{{ c }}">{{ row[c] if row[c] is not none else '—' }}</td>{% endfor %}</tr>{% endfor %}
+    </tbody>
+  </table></div>
+  <p class="muted small">{{ t('report.rows_shown', shown=r.rows|length, total=r.total) }}</p>
+</section>
+{% endfor %}
+{% endblock %}

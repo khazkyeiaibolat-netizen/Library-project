@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}{{ t('nav.about') }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ t('about.title') }}</h1><p class="muted">{{ t('about.sub') }}</p></div>
+
+<section class="prose">
+  <p>{{ t('about.p1') }}</p>
+  <h2>{{ t('about.roles') }}</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>{{ t('admin.role') }}</th><th>{{ t('about.can') }}</th></tr></thead>
+    <tbody>
+      {% for r in ('reader', 'branch_staff', 'librarian', 'admin') %}
+      <tr><td data-label="{{ t('admin.role') }}"><b>{{ t('role.' ~ r) }}</b></td><td data-label="{{ t('about.can') }}">{{ t('about.role_' ~ r) }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table></div>
+
+  <h2>{{ t('about.er') }}</h2>
+  <figure>
+    <img src="{{ url_for('static', filename='img/er-diagram.png') }}" alt="{{ t('about.er') }}" width="880" loading="lazy">
+    <figcaption>{{ t('about.er_caption') }}</figcaption>
+  </figure>
+
+  <h2>{{ t('about.tables') }}</h2>
+  <p class="muted">{{ t('about.tables_note') }}</p>
+  <div class="schema-grid">
+  {% for name, tb in tables.items() %}
+    <div class="card schema">
+      <h3><code>{{ name }}</code> <span class="pill pill-info">{{ tb.rows }} {{ t('about.rows') }}</span></h3>
+      <table>
+        <tbody>
+        {% for c in tb.columns %}
+          <tr>
+            <td><code>{{ c['name'] }}</code></td>
+            <td class="muted">{{ c['type'] }}</td>
+            <td class="small">
+              {% if c['pk'] %}<span class="tag tag-pk">PK</span>{% endif %}
+              {% if c['name'] in tb.fks %}<span class="tag tag-fk" title="{{ tb.fks[c['name']] }}">FK → {{ tb.fks[c['name']] }}</span>{% endif %}
+              {% if c['notnull'] and not c['pk'] %}<span class="tag">NOT NULL</span>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% endfor %}
+  </div>
+
+  <h2>{{ t('about.rules') }}</h2>
+  <ul>
+    <li>{{ t('about.rule1') }}</li>
+    <li>{{ t('about.rule2') }}</li>
+    <li>{{ t('about.rule3') }}</li>
+    <li>{{ t('about.rule4') }}</li>
+  </ul>
+</section>
+{% endblock %}

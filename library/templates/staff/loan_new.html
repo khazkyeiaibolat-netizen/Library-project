@@ -1,0 +1,32 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import csrf %}
+{% block title %}{{ t('loan.issue') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head"><h1>{{ t('loan.issue') }}</h1><p class="muted">{{ t('loan.issue_sub', days=config.LOAN_DAYS, max=config.MAX_ACTIVE_LOANS) }}</p></div>
+
+<form class="card form-narrow" method="post" id="issue-form" data-api="{{ url_for('staff.api_available', branch_id=0) }}">
+  {{ csrf() }}
+  <div class="field"><label for="branch_id">{{ t('book.branch') }}</label>
+    <select id="branch_id" name="branch" required>
+      {% for b in branches %}<option value="{{ b.branch_id }}" {{ 'selected' if b.branch_id == sel.branch }}>{{ b.name }}</option>{% endfor %}
+    </select></div>
+
+  <div class="field"><label for="reader-filter">{{ t('loan.reader') }}</label>
+    <input id="reader-filter" type="search" placeholder="{{ t('loan.filter_readers') }}" autocomplete="off" data-filter-select="reader_id">
+    <select id="reader_id" name="reader" required size="1">
+      <option value="">{{ t('common.choose') }}</option>
+      {% for r in readers %}<option value="{{ r.reader_id }}" {{ 'selected' if r.reader_id == sel.reader }}>{{ r.full_name }}{% if r.phone %} · {{ r.phone }}{% endif %}</option>{% endfor %}
+    </select>
+    <small><a href="{{ url_for('staff.reader_new') }}">＋ {{ t('reader.add') }}</a></small></div>
+
+  <div class="field"><label for="book_id">{{ t('loan.book') }}</label>
+    <select id="book_id" name="book" required>
+      <option value="">{{ t('common.choose') }}</option>
+      {% for b in books %}<option value="{{ b.book_id }}" {{ 'selected' if b.book_id == sel.book }}>{{ b.title }} — {{ b.author.split(',')[0] }} ({{ b.quantity }})</option>{% endfor %}
+    </select>
+    <small>{{ t('loan.only_in_stock') }}</small></div>
+
+  <div class="actions"><button class="btn" type="submit">{{ t('loan.issue') }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('staff.loans') }}">{{ t('common.cancel') }}</a></div>
+</form>
+{% endblock %}

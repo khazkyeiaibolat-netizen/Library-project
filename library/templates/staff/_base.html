@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block subnav %}
+<div class="subnav">
+  <div class="wrap">
+    <span class="scope">{% if g.user.role == 'branch_staff' %}{{ g.user.branch_name }}{% else %}{{ t('role.' ~ g.user.role) }}{% endif %}</span>
+    {% set ep = request.endpoint %}
+    <nav aria-label="{{ t('nav.workspace') }}">
+      <a href="{{ url_for('staff.dashboard') }}" {% if ep == 'staff.dashboard' %}aria-current="page"{% endif %}>{{ t('staff.dashboard') }}</a>
+      <a href="{{ url_for('staff.loans') }}" {% if ep == 'staff.loans' %}aria-current="page"{% endif %}>{{ t('staff.loans') }}</a>
+      <a href="{{ url_for('staff.loan_new') }}" {% if ep == 'staff.loan_new' %}aria-current="page"{% endif %}>{{ t('loan.issue') }}</a>
+      <a href="{{ url_for('staff.readers') }}" {% if ep and ep.startswith('staff.reader') %}aria-current="page"{% endif %}>{{ t('staff.readers') }}</a>
+      <a href="{{ url_for('staff.books') }}" {% if ep and ep.startswith('staff.book') %}aria-current="page"{% endif %}>{{ t('staff.books') }}</a>
+      <a href="{{ url_for('staff.inventory') }}" {% if ep == 'staff.inventory' %}aria-current="page"{% endif %}>{{ t('staff.inventory') }}</a>
+      {% if g.user.role == 'admin' %}
+        <span class="nav-sep"></span>
+        <a href="{{ url_for('admin.dashboard') }}" {% if ep == 'admin.dashboard' %}aria-current="page"{% endif %}>{{ t('admin.analytics') }}</a>
+        <a href="{{ url_for('admin.users') }}" {% if ep and ep.startswith('admin.user') %}aria-current="page"{% endif %}>{{ t('admin.users') }}</a>
+        <a href="{{ url_for('admin.branches') }}" {% if ep and ep.startswith('admin.branch') %}aria-current="page"{% endif %}>{{ t('nav.branches') }}</a>
+        <a href="{{ url_for('admin.reports') }}" {% if ep == 'admin.reports' %}aria-current="page"{% endif %}>{{ t('admin.reports') }}</a>
+      {% endif %}
+    </nav>
+  </div>
+</div>
+{% endblock %}
+{% block content %}{% block staff_content %}{% endblock %}{% endblock %}

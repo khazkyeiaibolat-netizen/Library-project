@@ -1,0 +1,47 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import csrf, loan_state, pagination, empty %}
+{% block title %}{{ t('staff.loans') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head row">
+  <div><h1>{{ t('staff.loans') }}</h1><p class="muted">{{ t('catalog.found', n=total) }}</p></div>
+  <a class="btn" href="{{ url_for('staff.loan_new') }}">＋ {{ t('loan.issue') }}</a>
+</div>
+
+<form class="filters" method="get">
+  <div class="field"><label for="status">{{ t('loan.state') }}</label>
+    <select id="status" name="status">
+      {% for s in ('active', 'overdue', 'returned', 'all') %}<option value="{{ s }}" {{ 'selected' if s == status }}>{{ t('loan.filter_' ~ s) }}</option>{% endfor %}
+    </select></div>
+  {% if g.user.role != 'branch_staff' %}
+  <div class="field"><label for="branch">{{ t('book.branch') }}</label>
+    <select id="branch" name="branch"><option value="">{{ t('common.all_branches') }}</option>
+      {% for b in branches %}<option value="{{ b.branch_id }}" {{ 'selected' if b.branch_id == branch }}>{{ b.name }}</option>{% endfor %}
+    </select></div>
+  {% endif %}
+  <div class="field grow"><label for="q">{{ t('common.search') }}</label>
+    <input id="q" type="search" name="q" value="{{ q }}" placeholder="{{ t('loan.search_placeholder') }}"></div>
+  <div class="actions"><button class="btn" type="submit">{{ t('common.apply') }}</button></div>
+</form>
+
+{% if loans %}
+<div class="table-wrap"><table>
+  <thead><tr><th>#</th><th>{{ t('loan.reader') }}</th><th>{{ t('book.title') }}</th><th>{{ t('book.branch') }}</th><th>{{ t('loan.loan_date') }}</th><th>{{ t('loan.due_date') }}</th><th>{{ t('loan.state') }}</th><th></th></tr></thead>
+  <tbody>
+  {% for l in loans %}
+    <tr>
+      <td data-label="#" class="muted">{{ l.loan_id }}</td>
+      <td data-label="{{ t('loan.reader') }}"><a href="{{ url_for('staff.reader_detail', reader_id=l.reader_id) }}">{{ l.reader_name }}</a></td>
+      <td data-label="{{ t('book.title') }}"><a href="{{ url_for('public.book_detail', book_id=l.book_id) }}">{{ l.title }}</a></td>
+      <td data-label="{{ t('book.branch') }}">{{ l.branch_name }}</td>
+      <td data-label="{{ t('loan.loan_date') }}">{{ fmt_date(l.loan_date) }}</td>
+      <td data-label="{{ t('loan.due_date') }}">{{ fmt_date(l.due_date) }}{% if l.return_date %}<br><span class="muted small">↩ {{ fmt_date(l.return_date) }}</span>{% endif %}</td>
+      <td data-label="{{ t('loan.state') }}">{{ loan_state(l) }}</td>
+      <td class="num">{% if not l.return_id %}
+        <form method="post" action="{{ url_for('staff.loan_return', loan_id=l.loan_id) }}">{{ csrf() }}<input type="hidden" name="next" value="{{ request.full_path.rstrip('?') }}"><button class="btn btn-sm" type="submit">{{ t('loan.return') }}</button></form>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{{ pagination(page) }}
+{% else %}{{ empty(t('loan.none')) }}{% endif %}
+{% endblock %}

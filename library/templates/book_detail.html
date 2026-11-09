@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import cover, availability, csrf %}
+{% block title %}{{ book.title }}{% endblock %}
+{% block content %}
+<nav class="crumbs" aria-label="breadcrumb"><a href="{{ url_for('public.catalog') }}">{{ t('nav.catalog') }}</a> / <span>{{ book.title }}</span></nav>
+
+<article class="book-page">
+  <div class="book-visual">{{ cover(book) }}</div>
+  <div class="book-info">
+    <p class="eyebrow">{{ genre_label(book.genre) }}</p>
+    <h1>{{ book.title }}</h1>
+    <p class="lead">{{ book.author }}</p>
+    <dl class="facts">
+      <div><dt>{{ t('book.year') }}</dt><dd>{{ book.publish_year or '—' }}</dd></div>
+      <div><dt>{{ t('book.id') }}</dt><dd>#{{ book.book_id }}</dd></div>
+      <div><dt>{{ t('book.on_shelves') }}</dt><dd>{{ total_available }}</dd></div>
+      <div><dt>{{ t('book.times_borrowed') }}</dt><dd>{{ times_borrowed }}</dd></div>
+    </dl>
+    {% if g.user and g.user.role in ('librarian', 'admin') %}
+    <div class="actions">
+      <a class="btn btn-ghost" href="{{ url_for('staff.book_edit', book_id=book.book_id) }}">{{ t('common.edit') }}</a>
+      <form method="post" action="{{ url_for('staff.book_delete', book_id=book.book_id) }}" data-confirm="{{ t('confirm.delete') }}">
+        {{ csrf() }}<button class="btn btn-danger" type="submit">{{ t('common.delete') }}</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</article>
+
+<section>
+  <h2>{{ t('book.where') }}</h2>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>{{ t('book.branch') }}</th><th>{{ t('branch.address') }}</th><th class="num">{{ t('book.on_shelf') }}</th><th class="num">{{ t('book.on_loan') }}</th>
+      {% if g.user and g.user.role in ('branch_staff', 'librarian', 'admin') %}<th></th>{% endif %}</tr></thead>
+    <tbody>
+    {% for s in stock %}
+      <tr>
+        <td data-label="{{ t('book.branch') }}"><a href="{{ url_for('public.branch_detail', branch_id=s.branch_id) }}"><b>{{ s.name }}</b></a></td>
+        <td data-label="{{ t('branch.address') }}" class="muted">{{ s.address }}</td>
+        <td data-label="{{ t('book.on_shelf') }}" class="num">{{ availability(s.quantity) }}</td>
+        <td data-label="{{ t('book.on_loan') }}" class="num">{{ s.on_loan }}</td>
+        {% if g.user and g.user.role in ('branch_staff', 'librarian', 'admin') %}
+        <td class="num">{% if s.quantity > 0 and (g.user.role != 'branch_staff' or g.user.branch_id == s.branch_id) %}
+          <a class="btn btn-sm" href="{{ url_for('staff.loan_new', book=book.book_id, branch=s.branch_id) }}">{{ t('loan.issue') }}</a>{% endif %}</td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% if not g.user %}<p class="muted small">{{ t('book.ask_staff') }}</p>{% endif %}
+</section>
+
+{% if related %}
+<section>
+  <h2>{{ t('book.related') }}</h2>
+  <ul class="plain-list">
+    {% for r in related %}<li><a href="{{ url_for('public.book_detail', book_id=r.book_id) }}"><b>{{ r.title }}</b></a> <span class="muted">— {{ r.author }}</span></li>{% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}

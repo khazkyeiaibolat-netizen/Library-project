@@ -1,0 +1,32 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import pagination, empty %}
+{% block title %}{{ t('staff.readers') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head row">
+  <div><h1>{{ t('staff.readers') }}</h1><p class="muted">{{ t('catalog.found', n=total) }}</p></div>
+  <a class="btn" href="{{ url_for('staff.reader_new') }}">＋ {{ t('reader.add') }}</a>
+</div>
+<form class="filters" method="get" role="search">
+  <div class="field grow"><label for="q">{{ t('common.search') }}</label>
+    <input id="q" type="search" name="q" value="{{ q }}" placeholder="{{ t('reader.search_placeholder') }}"></div>
+  <div class="actions"><button class="btn" type="submit">{{ t('common.search') }}</button></div>
+</form>
+{% if readers %}
+<div class="table-wrap"><table>
+  <thead><tr><th>#</th><th>{{ t('reader.full_name') }}</th><th>{{ t('reader.phone') }}</th><th class="num">{{ t('reader.active') }}</th><th class="num">{{ t('reader.total_loans') }}</th><th>{{ t('reader.account') }}</th></tr></thead>
+  <tbody>
+  {% for r in readers %}
+    <tr>
+      <td data-label="#" class="muted">{{ r.reader_id }}</td>
+      <td data-label="{{ t('reader.full_name') }}"><a href="{{ url_for('staff.reader_detail', reader_id=r.reader_id) }}"><b>{{ r.full_name }}</b></a></td>
+      <td data-label="{{ t('reader.phone') }}">{{ r.phone or '—' }}</td>
+      <td data-label="{{ t('reader.active') }}" class="num">{{ r.active }}</td>
+      <td data-label="{{ t('reader.total_loans') }}" class="num">{{ r.total_loans }}</td>
+      <td data-label="{{ t('reader.account') }}">{% if r.username %}<code>{{ r.username }}</code>{% else %}<span class="muted">—</span>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{{ pagination(page) }}
+{% else %}{{ empty(t('reader.none')) }}{% endif %}
+{% endblock %}

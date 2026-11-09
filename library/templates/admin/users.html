@@ -1,0 +1,36 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import csrf %}
+{% block title %}{{ t('admin.users') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head row">
+  <div><h1>{{ t('admin.users') }}</h1><p class="muted">{{ t('admin.users_sub') }}</p></div>
+  <a class="btn" href="{{ url_for('admin.user_new') }}">＋ {{ t('admin.new_user') }}</a>
+</div>
+<div class="table-wrap"><table>
+  <thead><tr><th>{{ t('auth.username') }}</th><th>{{ t('admin.role') }}</th><th>{{ t('admin.linked') }}</th><th>{{ t('admin.last_login') }}</th><th>{{ t('admin.status') }}</th><th>{{ t('common.actions') }}</th></tr></thead>
+  <tbody>
+  {% for u in users %}
+    <tr>
+      <td data-label="{{ t('auth.username') }}"><b>{{ u.username }}</b>{% if u.user_id == g.user.user_id %} <span class="pill pill-info">{{ t('admin.you') }}</span>{% endif %}</td>
+      <td data-label="{{ t('admin.role') }}">{{ t('role.' ~ u.role) }}</td>
+      <td data-label="{{ t('admin.linked') }}" class="muted">{{ u.full_name or u.branch_name or '—' }}</td>
+      <td data-label="{{ t('admin.last_login') }}" class="muted">{{ fmt_date(u.last_login) if u.last_login else '—' }}</td>
+      <td data-label="{{ t('admin.status') }}">{% if u.is_active %}<span class="pill pill-ok">{{ t('admin.active') }}</span>{% else %}<span class="pill pill-off">{{ t('admin.disabled') }}</span>{% endif %}</td>
+      <td data-label="{{ t('common.actions') }}">
+        <div class="row-actions">
+          {% if u.user_id != g.user.user_id %}
+          <form method="post" action="{{ url_for('admin.user_toggle', user_id=u.user_id) }}">{{ csrf() }}
+            <button class="btn btn-sm btn-ghost" type="submit">{{ t('admin.disable') if u.is_active else t('admin.enable') }}</button></form>
+          {% endif %}
+          <details class="transfer"><summary class="btn btn-sm btn-ghost">{{ t('admin.reset_password') }}</summary>
+            <form method="post" action="{{ url_for('admin.user_password', user_id=u.user_id) }}">{{ csrf() }}
+              <label>{{ t('account.new_password') }} <input name="password" type="password" minlength="8" required autocomplete="new-password"></label>
+              <button class="btn btn-sm" type="submit">{{ t('common.save') }}</button></form>
+          </details>
+        </div>
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table></div>
+{% endblock %}

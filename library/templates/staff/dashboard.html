@@ -1,0 +1,63 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import csrf, loan_state, empty %}
+{% block title %}{{ t('staff.dashboard') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head">
+  <h1>{{ t('staff.dashboard') }}</h1>
+  <p class="muted">{{ t('staff.scope_branch', name=g.user.branch_name) if g.user.role == 'branch_staff' else t('staff.scope_all') }}</p>
+</div>
+
+<section class="stats">
+  <div><b>{{ stats.active }}</b><span>{{ t('stat.on_loan') }}</span></div>
+  <div><b class="{{ 'bad' if stats.overdue }}">{{ stats.overdue }}</b><span>{{ t('loan.overdue') }}</span></div>
+  <div><b>{{ stats.issued_today }}</b><span>{{ t('stat.issued_today') }}</span></div>
+  <div><b>{{ stats.returned_today }}</b><span>{{ t('stat.returned_today') }}</span></div>
+  <div><b>{{ stats.copies }}</b><span>{{ t('stat.on_shelf') }}</span></div>
+  <div><b>{{ stats.out_of_stock }}</b><span>{{ t('stat.out_of_stock') }}</span></div>
+</section>
+
+<div class="quick">
+  <a class="btn" href="{{ url_for('staff.loan_new') }}">＋ {{ t('loan.issue') }}</a>
+  <a class="btn btn-ghost" href="{{ url_for('staff.reader_new') }}">＋ {{ t('reader.add') }}</a>
+  <a class="btn btn-ghost" href="{{ url_for('staff.loans', status='overdue') }}">{{ t('staff.view_overdue') }}</a>
+</div>
+
+<section>
+  <h2>{{ t('staff.overdue_list') }}</h2>
+  {% if overdue %}
+  <div class="table-wrap"><table>
+    <thead><tr><th>{{ t('loan.reader') }}</th><th>{{ t('book.title') }}</th><th>{{ t('book.branch') }}</th><th>{{ t('loan.due_date') }}</th><th>{{ t('loan.state') }}</th><th></th></tr></thead>
+    <tbody>
+    {% for l in overdue %}
+      <tr>
+        <td data-label="{{ t('loan.reader') }}"><a href="{{ url_for('staff.reader_detail', reader_id=l.reader_id) }}">{{ l.reader_name }}</a></td>
+        <td data-label="{{ t('book.title') }}">{{ l.title }}</td>
+        <td data-label="{{ t('book.branch') }}">{{ l.branch_name }}</td>
+        <td data-label="{{ t('loan.due_date') }}">{{ fmt_date(l.due_date) }}</td>
+        <td data-label="{{ t('loan.state') }}">{{ loan_state(l) }}</td>
+        <td class="num"><form method="post" action="{{ url_for('staff.loan_return', loan_id=l.loan_id) }}">{{ csrf() }}<input type="hidden" name="next" value="{{ url_for('staff.dashboard') }}"><button class="btn btn-sm" type="submit">{{ t('loan.return') }}</button></form></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% else %}{{ empty(t('staff.no_overdue')) }}{% endif %}
+</section>
+
+<section>
+  <h2>{{ t('staff.recent') }}</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>{{ t('loan.loan_date') }}</th><th>{{ t('loan.reader') }}</th><th>{{ t('book.title') }}</th><th>{{ t('book.branch') }}</th><th>{{ t('loan.state') }}</th></tr></thead>
+    <tbody>
+    {% for l in recent %}
+      <tr>
+        <td data-label="{{ t('loan.loan_date') }}">{{ fmt_date(l.loan_date) }}</td>
+        <td data-label="{{ t('loan.reader') }}">{{ l.reader_name }}</td>
+        <td data-label="{{ t('book.title') }}">{{ l.title }}</td>
+        <td data-label="{{ t('book.branch') }}">{{ l.branch_name }}</td>
+        <td data-label="{{ t('loan.state') }}">{{ loan_state(l) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}

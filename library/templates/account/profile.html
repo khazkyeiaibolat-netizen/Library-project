@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% from '_macros.html' import csrf, field %}
+{% block title %}{{ t('nav.profile') }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ t('nav.profile') }}</h1>
+  <p class="muted">{{ g.user.username }} · {{ t('role.' ~ g.user.role) }}{% if g.user.branch_name %} · {{ g.user.branch_name }}{% endif %}</p></div>
+<div class="two-col">
+  {% if g.user.reader_id %}
+  <form class="card" method="post">
+    {{ csrf() }}<input type="hidden" name="action" value="details">
+    <h2>{{ t('account.details') }}</h2>
+    {{ field(t('reader.full_name'), 'full_name', g.user.full_name, required=true, maxlength=150) }}
+    {{ field(t('reader.phone'), 'phone', g.user.phone, type='tel', maxlength=20) }}
+    <button class="btn" type="submit">{{ t('common.save') }}</button>
+  </form>
+  {% endif %}
+  <form class="card" method="post">
+    {{ csrf() }}<input type="hidden" name="action" value="password">
+    <h2>{{ t('account.change_password') }}</h2>
+    <div class="field"><label for="cp">{{ t('account.current_password') }}</label><input id="cp" name="current_password" type="password" required autocomplete="current-password"></div>
+    <div class="field"><label for="np">{{ t('account.new_password') }}</label><input id="np" name="new_password" type="password" required minlength="8" autocomplete="new-password"><small>{{ t('auth.password_hint') }}</small></div>
+    <div class="field"><label for="np2">{{ t('auth.password2') }}</label><input id="np2" name="new_password2" type="password" required minlength="8" autocomplete="new-password"></div>
+    <button class="btn" type="submit">{{ t('account.change_password') }}</button>
+  </form>
+</div>
+{% endblock %}

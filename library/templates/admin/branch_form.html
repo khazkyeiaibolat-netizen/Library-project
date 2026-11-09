@@ -1,0 +1,14 @@
+{% extends 'staff/_base.html' %}
+{% from '_macros.html' import csrf, field %}
+{% block title %}{{ t('common.edit') if branch else t('admin.new_branch') }}{% endblock %}
+{% block staff_content %}
+<div class="page-head"><h1>{{ t('common.edit') ~ ': ' ~ branch.name if branch else t('admin.new_branch') }}</h1></div>
+<form class="card form-narrow" method="post">
+  {{ csrf() }}
+  {{ field(t('branch.name'), 'name', form.name, required=true, maxlength=100) }}
+  {{ field(t('branch.address'), 'address', form.address, required=true, maxlength=255) }}
+  {{ field(t('reader.phone'), 'phone', form.phone, type='tel', maxlength=20) }}
+  <div class="actions"><button class="btn" type="submit">{{ t('common.save') }}</button>
+    <a class="btn btn-ghost" href="{{ url_for('admin.branches') }}">{{ t('common.cancel') }}</a></div>
+</form>
+{% endblock %}
